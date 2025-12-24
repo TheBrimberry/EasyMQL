@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Assistant - AI-Powered Trading Signals</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>Trading Assistant</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#signals" class="nav-item" data-section="signals">
+                    <i class="fas fa-signal"></i>
+                    <span>Signals</span>
+                </a>
+                <a href="#analysis" class="nav-item" data-section="analysis">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Analysis</span>
+                </a>
+                <a href="#news" class="nav-item" data-section="news">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News & Sentiment</span>
+                </a>
+                <a href="#calendar" class="nav-item" data-section="calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Economic Calendar</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="api-status" id="apiStatus">
+                    <span class="status-dot offline"></span>
+                    <span>API Status</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="symbol-selector">
+                        <select id="symbolSelect">
+                            <optgroup label="Forex">
+                                <option value="EURUSD" selected>EUR/USD</option>
+                                <option value="GBPUSD">GBP/USD</option>
+                                <option value="USDJPY">USD/JPY</option>
+                                <option value="USDCHF">USD/CHF</option>
+                                <option value="AUDUSD">AUD/USD</option>
+                            </optgroup>
+                            <optgroup label="Crypto">
+                                <option value="BTCUSD">BTC/USD</option>
+                                <option value="ETHUSD">ETH/USD</option>
+                            </optgroup>
+                            <optgroup label="Commodities">
+                                <option value="XAUUSD">XAU/USD (Gold)</option>
+                                <option value="XAGUSD">XAG/USD (Silver)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="timeframe-selector">
+                        <select id="timeframeSelect">
+                            <option value="M1">1 Minute</option>
+                            <option value="M5">5 Minutes</option>
+                            <option value="M15">15 Minutes</option>
+                            <option value="M30">30 Minutes</option>
+                            <option value="H1" selected>1 Hour</option>
+                            <option value="H4">4 Hours</option>
+                            <option value="D1">Daily</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="section active">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bullish">
+                            <i class="fas fa-arrow-trend-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Current Signal</span>
+                            <span class="stat-value" id="currentSignal">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon neutral">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Confidence</span>
+                            <span class="stat-value" id="confidence">--%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart-pulse"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Sentiment</span>
+                            <span class="stat-value" id="sentiment">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Market Trend</span>
+                            <span class="stat-value" id="marketTrend">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Chart Section -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Price Chart</h3>
+                            <div class="chart-controls">
+                                <button class="btn-icon active" data-chart="candle">
+                                    <i class="fas fa-chart-bar"></i>
+                                </button>
+                                <button class="btn-icon" data-chart="line">
+                                    <i class="fas fa-chart-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Signal Details -->
+                    <div class="card signal-card">
+                        <div class="card-header">
+                            <h3>AI Prediction</h3>
+                            <span class="badge" id="predictionTime">--</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="signal-display" id="signalDisplay">
+                                <div class="signal-icon">
+                                    <i class="fas fa-hourglass"></i>
+                                </div>
+                                <span class="signal-text">Waiting for signal...</span>
+                            </div>
+                            <div class="signal-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Price Target</span>
+                                    <span class="detail-value" id="priceTarget">--</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Stop Loss</span>
+                                    <span class="detail-value" id="stopLoss">--</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Take Profit</span>
+                                    <span class="detail-value" id="takeProfit">--</span>
+                                </div>
+                            </div>
+                            <div class="signal-reason" id="signalReason">
+                                <h4>Analysis</h4>
+                                <p>Click refresh to get the latest AI analysis...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicators -->
+                    <div class="card indicators-card">
+                        <div class="card-header">
+                            <h3>Technical Indicators</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="indicator-list">
+                                <div class="indicator-item">
+                                    <span class="indicator-name">RSI (14)</span>
+                                    <div class="indicator-bar">
+                                        <div class="indicator-fill" id="rsiBar" style="width: 50%"></div>
+                                    </div>
+                                    <span class="indicator-value" id="rsiValue">50</span>
+                                </div>
+                                <div class="indicator-item">
+                                    <span class="indicator-name">MACD</span>
+                                    <span class="indicator-signal" id="macdSignal">--</span>
+                                </div>
+                                <div class="indicator-item">
+                                    <span class="indicator-name">MA Cross</span>
+                                    <span class="indicator-signal" id="maCross">--</span>
+                                </div>
+                                <div class="indicator-item">
+                                    <span class="indicator-name">Trend</span>
+                                    <span class="indicator-signal" id="trendIndicator">--</span>
+                                </div>
+                                <div class="indicator-item">
+                                    <span class="indicator-name">Pattern</span>
+                                    <span class="indicator-signal" id="patternSignal">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sentiment Gauge -->
+                    <div class="card sentiment-card">
+                        <div class="card-header">
+                            <h3>Market Sentiment</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="sentiment-gauge">
+                                <canvas id="sentimentGauge"></canvas>
+                                <div class="sentiment-label" id="sentimentLabel">Neutral</div>
+                            </div>
+                            <div class="sentiment-breakdown">
+                                <div class="sentiment-item bullish">
+                                    <span class="label">Bullish</span>
+                                    <div class="bar">
+                                        <div class="fill" id="bullishBar" style="width: 50%"></div>
+                                    </div>
+                                </div>
+                                <div class="sentiment-item bearish">
+                                    <span class="label">Bearish</span>
+                                    <div class="bar">
+                                        <div class="fill" id="bearishBar" style="width: 50%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Signals Section -->
+            <section id="signalsSection" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Signal History</h3>
+                        <div class="filter-controls">
+                            <select id="signalFilter">
+                                <option value="all">All Signals</option>
+                                <option value="buy">Buy Only</option>
+                                <option value="sell">Sell Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="signals-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Symbol</th>
+                                    <th>Signal</th>
+                                    <th>Confidence</th>
+                                    <th>Entry</th>
+                                    <th>SL</th>
+                                    <th>TP</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signalsTableBody">
+                                <!-- Signals will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analysis Section -->
+            <section id="analysisSection" class="section">
+                <div class="analysis-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>AI Market Analysis</h3>
+                            <button class="btn btn-secondary" id="generateAnalysis">
+                                <i class="fas fa-magic"></i>
+                                Generate
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="analysis-content" id="analysisContent">
+                                <p>Click "Generate" to get AI-powered market analysis...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Key Levels</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="levels-list">
+                                <div class="level-group">
+                                    <h4>Resistance</h4>
+                                    <ul id="resistanceLevels">
+                                        <li>--</li>
+                                    </ul>
+                                </div>
+                                <div class="level-group">
+                                    <h4>Support</h4>
+                                    <ul id="supportLevels">
+                                        <li>--</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- News Section -->
+            <section id="newsSection" class="section">
+                <div class="news-grid">
+                    <div class="card news-feed-card">
+                        <div class="card-header">
+                            <h3>Latest News</h3>
+                            <button class="btn btn-icon" id="refreshNews">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="news-list" id="newsList">
+                                <!-- News items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card sentiment-overview-card">
+                        <div class="card-header">
+                            <h3>Sentiment Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="sentiment-overview" id="sentimentOverview">
+                                <div class="overview-item">
+                                    <span class="currency">USD</span>
+                                    <div class="sentiment-bar">
+                                        <div class="fill positive" style="width: 60%"></div>
+                                    </div>
+                                    <span class="value">+0.2</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="currency">EUR</span>
+                                    <div class="sentiment-bar">
+                                        <div class="fill neutral" style="width: 50%"></div>
+                                    </div>
+                                    <span class="value">0.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar Section -->
+            <section id="calendarSection" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Economic Calendar</h3>
+                        <div class="filter-controls">
+                            <select id="impactFilter">
+                                <option value="all">All Impact</option>
+                                <option value="high">High Impact</option>
+                                <option value="medium">Medium Impact</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="calendar-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Currency</th>
+                                    <th>Event</th>
+                                    <th>Impact</th>
+                                    <th>Previous</th>
+                                    <th>Forecast</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendarTableBody">
+                                <!-- Calendar events will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settingsSection" class="section">
+                <div class="settings-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>API Configuration</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="apiUrl">API URL</label>
+                                <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+                            </div>
+                            <div class="form-group">
+                                <label for="apiKey">API Key (Optional)</label>
+                                <input type="password" id="apiKey" placeholder="Enter API key">
+                            </div>
+                            <button class="btn btn-primary" id="saveApiSettings">
+                                <i class="fas fa-save"></i>
+                                Save Settings
+                            </button>
+                            <button class="btn btn-secondary" id="testConnection">
+                                <i class="fas fa-plug"></i>
+                                Test Connection
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Trading Preferences</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="minConfidence">Minimum Confidence</label>
+                                <input type="range" id="minConfidence" min="50" max="95" value="70">
+                                <span id="minConfidenceValue">70%</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="autoRefresh">Auto Refresh Interval</label>
+                                <select id="autoRefresh">
+                                    <option value="0">Disabled</option>
+                                    <option value="30">30 seconds</option>
+                                    <option value="60" selected>1 minute</option>
+                                    <option value="300">5 minutes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="soundAlerts" checked>
+                                    Sound Alerts for Signals
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="browserNotifications">
+                                    Browser Notifications
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
