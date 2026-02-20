@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Assistant - Settings</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-hover: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .settings-container {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .settings-header svg {
+      width: 32px;
+      height: 32px;
+      color: var(--primary);
+    }
+
+    .settings-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .settings-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-group .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    input[type="number"],
+    select {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 8px 0;
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--bg-hover);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    }
+
+    .range-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .range-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .checkbox-group span {
+      font-size: 14px;
+    }
+
+    .watchlist-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .watchlist-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .watchlist-tag .remove-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .watchlist-tag .remove-btn:hover {
+      color: var(--danger);
+    }
+
+    .add-symbol-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .add-symbol-row input {
+      flex: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 100;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error { border-left: 3px solid var(--danger); }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+    }
+
+    .status-indicator .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-indicator .dot.online { background: var(--success); }
+    .status-indicator .dot.offline { background: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="settings-container">
+    <div class="settings-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      </svg>
+      <div>
+        <h1>Trading Assistant Settings</h1>
+        <p>Configure your AI-powered trading signals</p>
+      </div>
+    </div>
+
+    <!-- API Configuration -->
+    <div class="card">
+      <div class="card-header">API Configuration</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>API Server URL</label>
+          <input type="url" id="apiUrl" placeholder="http://localhost:8000">
+          <div class="hint">The URL of your Trading Assistant backend server</div>
+        </div>
+        <div class="form-group">
+          <label>API Key (Optional)</label>
+          <input type="password" id="apiKey" placeholder="Enter API key">
+          <div class="hint">Authentication key for the API server</div>
+        </div>
+        <div class="form-group">
+          <label>Connection Status</label>
+          <div class="status-indicator" id="connectionStatus">
+            <span class="dot offline" id="connDot"></span>
+            <span id="connText">Not tested</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="testConnectionBtn">Test Connection</button>
+      </div>
+    </div>
+
+    <!-- Trading Preferences -->
+    <div class="card">
+      <div class="card-header">Trading Preferences</div>
+      <div class="card-body">
+        <div class="form-group">
+          <div class="range-display">
+            <label>Minimum Signal Confidence</label>
+            <span class="range-value" id="confidenceValue">70%</span>
+          </div>
+          <input type="range" id="minConfidence" min="50" max="95" step="5" value="70">
+          <div class="hint">Only show signals with confidence above this threshold</div>
+        </div>
+        <div class="form-group">
+          <label>Auto-Refresh Interval</label>
+          <select id="autoRefresh">
+            <option value="0">Disabled</option>
+            <option value="1" selected>Every 1 minute</option>
+            <option value="5">Every 5 minutes</option>
+            <option value="15">Every 15 minutes</option>
+            <option value="30">Every 30 minutes</option>
+            <option value="60">Every 1 hour</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card">
+      <div class="card-header">Notifications</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="notificationsEnabled" checked>
+            <span>Enable desktop notifications for trading signals</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="soundEnabled" checked>
+            <span>Enable sound alerts for high-confidence signals</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="badgeEnabled" checked>
+            <span>Show signal badge on extension icon</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Watchlist -->
+    <div class="card">
+      <div class="card-header">Watchlist</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Monitored Symbols</label>
+          <div class="hint">These symbols will be checked for signals in the background</div>
+          <div class="watchlist-container" id="watchlistContainer">
+            <!-- Tags will be rendered here -->
+          </div>
+          <div class="add-symbol-row">
+            <input type="text" id="addSymbolInput" placeholder="e.g. EURUSD" maxlength="10">
+            <button class="btn btn-secondary btn-sm" id="addSymbolBtn">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      <button class="btn btn-danger" id="resetBtn">Reset to Defaults</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

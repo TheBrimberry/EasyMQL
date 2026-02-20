@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Assistant - Full Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bullish: #10b981;
+      --bearish: #ef4444;
+      --neutral: #6b7280;
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-hover: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .top-bar-left h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .status-pill .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .status-pill .dot.online { background: var(--success); }
+    .status-pill .dot.offline { background: var(--danger); }
+
+    select, button {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    select:focus { border-color: var(--primary); }
+
+    .btn-refresh {
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-refresh:hover { background: var(--primary-dark); }
+
+    /* Main Layout */
+    .main-layout {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Stat Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .stat-icon.buy { background: rgba(16,185,129,0.1); color: var(--bullish); }
+    .stat-icon.sell { background: rgba(239,68,68,0.1); color: var(--bearish); }
+    .stat-icon.info { background: rgba(59,130,246,0.1); color: var(--primary); }
+    .stat-icon.warn { background: rgba(245,158,11,0.1); color: var(--warning); }
+
+    .stat-details { display: flex; flex-direction: column; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); }
+    .stat-value { font-size: 22px; font-weight: 700; }
+    .stat-value.bullish { color: var(--bullish); }
+    .stat-value.bearish { color: var(--bearish); }
+
+    /* Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    /* Chart */
+    .chart-container { height: 350px; }
+
+    /* Signal Panel */
+    .signal-panel {
+      text-align: center;
+      padding: 24px 20px;
+    }
+
+    .signal-big {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .signal-big.buy { color: var(--bullish); }
+    .signal-big.sell { color: var(--bearish); }
+    .signal-big.hold { color: var(--neutral); }
+
+    .confidence-ring {
+      width: 120px;
+      height: 120px;
+      margin: 16px auto;
+    }
+
+    .signal-targets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .target-box {
+      background: var(--bg-primary);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .target-box .label {
+      font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .target-box .value {
+      font-size: 14px; font-weight: 600; margin-top: 4px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .target-box.sl .value { color: var(--bearish); }
+    .target-box.tp .value { color: var(--bullish); }
+
+    .analysis-text {
+      text-align: left;
+      padding: 16px;
+      margin-top: 16px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* Signal History Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge.buy { background: rgba(16,185,129,0.15); color: var(--bullish); }
+    .badge.sell { background: rgba(239,68,68,0.15); color: var(--bearish); }
+    .badge.hold { background: rgba(107,114,128,0.15); color: var(--neutral); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr; }
+      .main-layout { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <h1>Trading Assistant Dashboard</h1>
+      <div class="status-pill" id="apiPill">
+        <span class="dot offline" id="apiDot"></span>
+        <span id="apiText">Checking...</span>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <select id="symbolSelect">
+        <optgroup label="Forex">
+          <option value="EURUSD" selected>EUR/USD</option>
+          <option value="GBPUSD">GBP/USD</option>
+          <option value="USDJPY">USD/JPY</option>
+          <option value="USDCHF">USD/CHF</option>
+          <option value="AUDUSD">AUD/USD</option>
+        </optgroup>
+        <optgroup label="Crypto">
+          <option value="BTCUSD">BTC/USD</option>
+          <option value="ETHUSD">ETH/USD</option>
+        </optgroup>
+        <optgroup label="Commodities">
+          <option value="XAUUSD">XAU/USD</option>
+        </optgroup>
+      </select>
+      <select id="timeframeSelect">
+        <option value="M5">M5</option>
+        <option value="M15">M15</option>
+        <option value="H1" selected>H1</option>
+        <option value="H4">H4</option>
+        <option value="D1">D1</option>
+      </select>
+      <button class="btn-refresh" id="refreshBtn">Refresh</button>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon buy">&#8593;</div>
+        <div class="stat-details">
+          <span class="stat-label">Signal</span>
+          <span class="stat-value" id="statSignal">--</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon info">%</div>
+        <div class="stat-details">
+          <span class="stat-label">Confidence</span>
+          <span class="stat-value" id="statConfidence">--%</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon warn">S</div>
+        <div class="stat-details">
+          <span class="stat-label">Sentiment</span>
+          <span class="stat-value" id="statSentiment">--</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon info">T</div>
+        <div class="stat-details">
+          <span class="stat-label">Total Signals</span>
+          <span class="stat-value" id="statTotal">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Left: Chart -->
+      <div>
+        <div class="card">
+          <div class="card-head">
+            <span>Price Chart</span>
+            <span id="chartSymbol">EUR/USD</span>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="priceChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signal History -->
+        <div class="card" style="margin-top:20px">
+          <div class="card-head">Signal History</div>
+          <div class="card-content" style="max-height:300px;overflow-y:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Symbol</th>
+                  <th>Signal</th>
+                  <th>Confidence</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Signal Panel -->
+      <div>
+        <div class="card">
+          <div class="card-head">AI Prediction</div>
+          <div class="signal-panel">
+            <div class="signal-big hold" id="bigSignal">--</div>
+            <div style="margin-top:8px">
+              <canvas id="confidenceChart" width="120" height="120"></canvas>
+            </div>
+            <div class="signal-targets">
+              <div class="target-box">
+                <div class="label">Entry</div>
+                <div class="value" id="tEntry">--</div>
+              </div>
+              <div class="target-box sl">
+                <div class="label">Stop Loss</div>
+                <div class="value" id="tSL">--</div>
+              </div>
+              <div class="target-box tp">
+                <div class="label">Take Profit</div>
+                <div class="value" id="tTP">--</div>
+              </div>
+            </div>
+            <div class="analysis-text" id="analysisText">
+              Click refresh to get AI prediction...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let symbol = 'EURUSD';
+    let timeframe = 'H1';
+    let priceChart, confChart;
+    let signalHistory = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      initEvents();
+      loadHistory();
+      checkAPI();
+      fetchPrediction();
+    });
+
+    function initCharts() {
+      const ctx = document.getElementById('priceChart').getContext('2d');
+      priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 50}, (_, i) => {
+            const d = new Date(Date.now() - (49 - i) * 3600000);
+            return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+          }),
+          datasets: [{
+            label: 'Price',
+            data: mockPrices(50),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.08)',
+            fill: true,
+            tension: 0.2,
+            pointRadius: 0,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#64748b', maxTicksLimit: 8 } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+
+      const cctx = document.getElementById('confidenceChart').getContext('2d');
+      confChart = new Chart(cctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Confidence', ''],
+          datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0 }]
+        },
+        options: {
+          responsive: false,
+          cutout: '75%',
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function initEvents() {
+      document.getElementById('symbolSelect').addEventListener('change', e => {
+        symbol = e.target.value;
+        document.getElementById('chartSymbol').textContent = e.target.selectedOptions[0].text;
+        fetchPrediction();
+      });
+      document.getElementById('timeframeSelect').addEventListener('change', e => {
+        timeframe = e.target.value;
+        fetchPrediction();
+      });
+      document.getElementById('refreshBtn').addEventListener('click', fetchPrediction);
+    }
+
+    async function checkAPI() {
+      try {
+        const config = await getConfig();
+        const resp = await fetch(`${config.apiUrl}/health`, { signal: AbortSignal.timeout(5000) });
+        if (resp.ok) {
+          document.getElementById('apiDot').className = 'dot online';
+          document.getElementById('apiText').textContent = 'Connected';
+          return true;
+        }
+      } catch {}
+      document.getElementById('apiDot').className = 'dot offline';
+      document.getElementById('apiText').textContent = 'Offline';
+      return false;
+    }
+
+    async function fetchPrediction() {
+      let prediction;
+      try {
+        const config = await getConfig();
+        const resp = await fetch(`${config.apiUrl}/api/predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            symbol, timeframe,
+            timestamp: Math.floor(Date.now() / 1000),
+            market_data: mockMarketData()
+          }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (resp.ok) prediction = await resp.json();
+      } catch {}
+
+      if (!prediction) prediction = mockPrediction();
+      updateDashboard(prediction);
+    }
+
+    function updateDashboard(p) {
+      const dir = p.direction === 1 ? 'BUY' : p.direction === -1 ? 'SELL' : 'HOLD';
+      const cls = p.direction === 1 ? 'bullish' : p.direction === -1 ? 'bearish' : '';
+
+      document.getElementById('statSignal').textContent = dir;
+      document.getElementById('statSignal').className = `stat-value ${cls}`;
+      document.getElementById('statConfidence').textContent = (p.confidence * 100).toFixed(0) + '%';
+
+      const sent = p.sentiment > 0.2 ? 'Bullish' : p.sentiment < -0.2 ? 'Bearish' : 'Neutral';
+      document.getElementById('statSentiment').textContent = sent;
+
+      const big = document.getElementById('bigSignal');
+      big.textContent = dir;
+      big.className = 'signal-big ' + dir.toLowerCase();
+
+      confChart.data.datasets[0].data = [p.confidence * 100, (1 - p.confidence) * 100];
+      confChart.data.datasets[0].backgroundColor[0] =
+        p.direction === 1 ? '#10b981' : p.direction === -1 ? '#ef4444' : '#6b7280';
+      confChart.update();
+
+      document.getElementById('tEntry').textContent = p.price_target?.toFixed(5) || '--';
+      document.getElementById('tSL').textContent = p.stop_loss?.toFixed(5) || '--';
+      document.getElementById('tTP').textContent = p.take_profit?.toFixed(5) || '--';
+      document.getElementById('analysisText').textContent = p.reason || 'No analysis available';
+
+      priceChart.data.datasets[0].data = mockPrices(50);
+      priceChart.update();
+
+      // History
+      signalHistory.unshift({
+        time: new Date().toLocaleTimeString(), symbol, dir,
+        confidence: (p.confidence * 100).toFixed(0) + '%',
+        reason: (p.reason || '').substring(0, 60)
+      });
+      if (signalHistory.length > 50) signalHistory.length = 50;
+      document.getElementById('statTotal').textContent = signalHistory.length;
+      renderHistory();
+    }
+
+    function renderHistory() {
+      document.getElementById('historyBody').innerHTML = signalHistory.map(s => `
+        <tr>
+          <td>${s.time}</td>
+          <td>${s.symbol}</td>
+          <td><span class="badge ${s.dir.toLowerCase()}">${s.dir}</span></td>
+          <td>${s.confidence}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.reason}</td>
+        </tr>
+      `).join('');
+    }
+
+    function loadHistory() {
+      chrome.storage.local.get('predictionHistory', (result) => {
+        const history = result.predictionHistory || [];
+        signalHistory = history.slice(0, 20).map(h => ({
+          time: new Date(h.timestamp).toLocaleTimeString(),
+          symbol: h.symbol,
+          dir: h.prediction.direction === 1 ? 'BUY' : h.prediction.direction === -1 ? 'SELL' : 'HOLD',
+          confidence: (h.prediction.confidence * 100).toFixed(0) + '%',
+          reason: (h.prediction.reason || '').substring(0, 60)
+        }));
+        document.getElementById('statTotal').textContent = signalHistory.length;
+        renderHistory();
+      });
+    }
+
+    function getConfig() {
+      return new Promise(resolve => {
+        chrome.storage.sync.get(['apiUrl', 'apiKey'], r => {
+          resolve({ apiUrl: r.apiUrl || 'http://localhost:8000', apiKey: r.apiKey || '' });
+        });
+      });
+    }
+
+    function mockPrices(n) {
+      const d = []; let p = 1.085;
+      for (let i = 0; i < n; i++) { p += (Math.random() - 0.5) * 0.002; d.push(p); }
+      return d;
+    }
+
+    function mockMarketData() {
+      const o=[],h=[],l=[],c=[],v=[]; let p=1.085;
+      for(let i=0;i<100;i++){
+        const ch=(Math.random()-0.5)*0.002;
+        o.push(+p.toFixed(5)); const cp=p+ch;
+        h.push(+(Math.max(p,cp)+Math.random()*0.001).toFixed(5));
+        l.push(+(Math.min(p,cp)-Math.random()*0.001).toFixed(5));
+        c.push(+cp.toFixed(5)); v.push(Math.floor(Math.random()*10000));
+        p=cp;
+      }
+      return {open:o,high:h,low:l,close:c,volume:v};
+    }
+
+    function mockPrediction() {
+      const d = Math.random()>0.55?1:Math.random()>0.5?-1:0;
+      const conf = 0.5+Math.random()*0.4;
+      return {
+        direction:d, confidence:conf, sentiment:(Math.random()-0.5)*2,
+        price_target:+(1.085+d*0.005).toFixed(5),
+        stop_loss:+(1.085-d*0.003).toFixed(5),
+        take_profit:+(1.085+d*0.008).toFixed(5),
+        reason:`${d===1?'Bullish':d===-1?'Bearish':'Neutral'} signal on ${symbol}. Technical indicators ${d!==0?'confirm':'show no clear'} directional bias.`
+      };
+    }
+  </script>
+</body>
+</html>

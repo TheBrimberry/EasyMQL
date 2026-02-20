@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span>Trading Assistant</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="refreshBtn" title="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="openDashboard" title="Open Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="9" y1="3" x2="9" y2="21"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" id="openSettings" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Connection Status -->
+    <div class="status-bar" id="statusBar">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+
+    <!-- Symbol Selector -->
+    <div class="symbol-bar">
+      <select id="symbolSelect">
+        <optgroup label="Forex">
+          <option value="EURUSD" selected>EUR/USD</option>
+          <option value="GBPUSD">GBP/USD</option>
+          <option value="USDJPY">USD/JPY</option>
+          <option value="USDCHF">USD/CHF</option>
+          <option value="AUDUSD">AUD/USD</option>
+          <option value="USDCAD">USD/CAD</option>
+          <option value="NZDUSD">NZD/USD</option>
+        </optgroup>
+        <optgroup label="Crypto">
+          <option value="BTCUSD">BTC/USD</option>
+          <option value="ETHUSD">ETH/USD</option>
+        </optgroup>
+        <optgroup label="Commodities">
+          <option value="XAUUSD">XAU/USD</option>
+          <option value="XAGUSD">XAG/USD</option>
+        </optgroup>
+        <optgroup label="Indices">
+          <option value="US30">US30</option>
+          <option value="US500">US500</option>
+          <option value="US100">US100</option>
+        </optgroup>
+      </select>
+      <select id="timeframeSelect">
+        <option value="M5">M5</option>
+        <option value="M15">M15</option>
+        <option value="M30">M30</option>
+        <option value="H1" selected>H1</option>
+        <option value="H4">H4</option>
+        <option value="D1">D1</option>
+      </select>
+    </div>
+
+    <!-- Main Signal Card -->
+    <div class="signal-card" id="signalCard">
+      <div class="signal-main">
+        <div class="signal-icon" id="signalIcon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+        </div>
+        <div class="signal-info">
+          <span class="signal-direction" id="signalDirection">WAITING</span>
+          <span class="signal-confidence" id="signalConfidence">-- %</span>
+        </div>
+      </div>
+      <div class="signal-reason" id="signalReason">Click refresh to get AI prediction...</div>
+    </div>
+
+    <!-- Price Targets -->
+    <div class="targets-grid">
+      <div class="target-item">
+        <span class="target-label">Entry</span>
+        <span class="target-value" id="entryPrice">--</span>
+      </div>
+      <div class="target-item sl">
+        <span class="target-label">Stop Loss</span>
+        <span class="target-value" id="slPrice">--</span>
+      </div>
+      <div class="target-item tp">
+        <span class="target-label">Take Profit</span>
+        <span class="target-value" id="tpPrice">--</span>
+      </div>
+    </div>
+
+    <!-- Indicators Row -->
+    <div class="indicators-section">
+      <h3 class="section-title">Technical Indicators</h3>
+      <div class="indicators-grid">
+        <div class="indicator">
+          <span class="ind-label">RSI</span>
+          <div class="ind-bar-wrap">
+            <div class="ind-bar" id="rsiBar" style="width:50%"></div>
+          </div>
+          <span class="ind-value" id="rsiValue">50</span>
+        </div>
+        <div class="indicator">
+          <span class="ind-label">MACD</span>
+          <span class="ind-badge neutral" id="macdBadge">--</span>
+        </div>
+        <div class="indicator">
+          <span class="ind-label">Trend</span>
+          <span class="ind-badge neutral" id="trendBadge">--</span>
+        </div>
+        <div class="indicator">
+          <span class="ind-label">Pattern</span>
+          <span class="ind-badge neutral" id="patternBadge">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sentiment -->
+    <div class="sentiment-section">
+      <h3 class="section-title">Market Sentiment</h3>
+      <div class="sentiment-bar-container">
+        <span class="sent-label bearish">Bearish</span>
+        <div class="sentiment-track">
+          <div class="sentiment-pointer" id="sentimentPointer" style="left:50%"></div>
+        </div>
+        <span class="sent-label bullish">Bullish</span>
+      </div>
+      <div class="sentiment-text" id="sentimentText">Neutral</div>
+    </div>
+
+    <!-- Recent Signals -->
+    <div class="recent-section">
+      <h3 class="section-title">Recent Signals</h3>
+      <div class="recent-list" id="recentSignals">
+        <div class="recent-empty">No signals yet</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span class="footer-time" id="lastUpdate">Last update: --</span>
+      <a href="#" id="footerDashboard" class="footer-link">Full Dashboard</a>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

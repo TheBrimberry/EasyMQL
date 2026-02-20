@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMQL Icon Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #60a5fa;
+        }
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+        .icons-grid {
+            display: flex;
+            gap: 40px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .icon-item canvas {
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 16px 16px;
+        }
+        .icon-label {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .icon-label strong {
+            color: #e2e8f0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+        }
+        button:hover { background: #1d4ed8; }
+        .download-all {
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .preview-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .preview-section h2 {
+            font-size: 18px;
+            color: #60a5fa;
+            margin-bottom: 16px;
+        }
+        .preview-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            align-items: center;
+            background: #1e293b;
+            padding: 20px 30px;
+            border-radius: 12px;
+        }
+        .preview-row img {
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body>
+    <h1>EasyMQL Icon Generator</h1>
+    <p class="subtitle">Trading chart icon on blue circular background - for Chrome Extension</p>
+
+    <button class="download-all" onclick="downloadAll()">Download All Icons (PNG)</button>
+
+    <div class="icons-grid" id="iconsGrid"></div>
+
+    <div class="preview-section">
+        <h2>Preview at Native Size</h2>
+        <div class="preview-row" id="previewRow"></div>
+    </div>
+
+    <script>
+        const SIZES = [16, 32, 48, 128];
+
+        // Chart polyline points (normalized 0..1 coordinates)
+        const CHART_POINTS = [
+            [0.15, 0.55],
+            [0.25, 0.60],
+            [0.32, 0.50],
+            [0.40, 0.65],
+            [0.48, 0.45],
+            [0.55, 0.55],
+            [0.62, 0.40],
+            [0.72, 0.50],
+            [0.80, 0.30],
+            [0.87, 0.25],
+        ];
+
+        function drawIcon(canvas, size) {
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Clear
+            ctx.clearRect(0, 0, size, size);
+
+            // Draw blue circle background
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2 - 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#2563eb';
+            ctx.fill();
+
+            // Subtle inner shadow / gradient for depth
+            if (size >= 48) {
+                const grad = ctx.createRadialGradient(
+                    size * 0.4, size * 0.35, 0,
+                    size / 2, size / 2, size / 2
+                );
+                grad.addColorStop(0, 'rgba(96, 165, 250, 0.25)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0.15)');
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2 - 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+
+            // Scale chart points
+            const scaledPoints = CHART_POINTS.map(([x, y]) => [x * size, y * size]);
+
+            // Determine line width
+            let lineWidth;
+            if (size <= 16) lineWidth = 1.5;
+            else if (size <= 32) lineWidth = 2.0;
+            else if (size <= 48) lineWidth = 2.8;
+            else lineWidth = 4.5;
+
+            // Draw chart polyline
+            ctx.beginPath();
+            ctx.moveTo(scaledPoints[0][0], scaledPoints[0][1]);
+            for (let i = 1; i < scaledPoints.length; i++) {
+                ctx.lineTo(scaledPoints[i][0], scaledPoints[i][1]);
+            }
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+
+            // Draw dot markers on larger sizes
+            if (size >= 48) {
+                const dotRadius = lineWidth * 0.45;
+                scaledPoints.forEach(([x, y]) => {
+                    ctx.beginPath();
+                    ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'white';
+                    ctx.fill();
+                });
+            }
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadAll() {
+            SIZES.forEach(size => {
+                const canvas = document.getElementById(`canvas-${size}`);
+                setTimeout(() => downloadCanvas(canvas, `icon${size}.png`), size * 2);
+            });
+        }
+
+        // Build the UI
+        const grid = document.getElementById('iconsGrid');
+        const previewRow = document.getElementById('previewRow');
+
+        SIZES.forEach(size => {
+            // Create display canvas (scaled up for visibility)
+            const displaySize = Math.max(size, 128);
+            const item = document.createElement('div');
+            item.className = 'icon-item';
+
+            const canvas = document.createElement('canvas');
+            canvas.id = `canvas-${size}`;
+            canvas.style.width = displaySize + 'px';
+            canvas.style.height = displaySize + 'px';
+            drawIcon(canvas, size);
+
+            const label = document.createElement('div');
+            label.className = 'icon-label';
+            label.innerHTML = `<strong>icon${size}.png</strong> (${size}x${size})`;
+
+            const btn = document.createElement('button');
+            btn.textContent = `Download ${size}x${size}`;
+            btn.onclick = () => downloadCanvas(canvas, `icon${size}.png`);
+
+            item.appendChild(canvas);
+            item.appendChild(label);
+            item.appendChild(btn);
+            grid.appendChild(item);
+
+            // Native-size preview
+            const previewCanvas = document.createElement('canvas');
+            drawIcon(previewCanvas, size);
+            previewCanvas.style.width = size + 'px';
+            previewCanvas.style.height = size + 'px';
+            previewRow.appendChild(previewCanvas);
+        });
+    </script>
+</body>
+</html>
