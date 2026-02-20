@@ -10,230 +10,247 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0f172a;
             color: #e2e8f0;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 2rem;
             min-height: 100vh;
         }
         h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
             color: #60a5fa;
         }
         .subtitle {
             color: #94a3b8;
-            margin-bottom: 40px;
-            font-size: 14px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
         }
         .icons-grid {
             display: flex;
-            gap: 40px;
-            align-items: flex-end;
             flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 40px;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
-        .icon-item {
+        .icon-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 1rem;
         }
-        .icon-item canvas {
-            border: 1px solid #334155;
+        .icon-card h3 {
+            color: #93c5fd;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .canvas-wrapper {
+            background: repeating-conic-gradient(#374151 0% 25%, #1e293b 0% 50%) 50% / 12px 12px;
             border-radius: 8px;
-            background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 16px 16px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .icon-label {
-            font-size: 13px;
-            color: #94a3b8;
+        canvas {
+            display: block;
+            image-rendering: pixelated;
         }
-        .icon-label strong {
-            color: #e2e8f0;
+        .preview-large canvas {
+            image-rendering: auto;
         }
-        button {
+        .btn {
             background: #2563eb;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            transition: background 0.15s;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.2s;
         }
-        button:hover { background: #1d4ed8; }
-        .download-all {
-            padding: 12px 28px;
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 30px;
+        .btn:hover { background: #1d4ed8; }
+        .btn-all {
+            background: #16a34a;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
-        .preview-section {
-            margin-top: 30px;
-            text-align: center;
-        }
-        .preview-section h2 {
-            font-size: 18px;
-            color: #60a5fa;
-            margin-bottom: 16px;
-        }
-        .preview-row {
-            display: flex;
-            gap: 24px;
-            justify-content: center;
-            align-items: center;
+        .btn-all:hover { background: #15803d; }
+        .info {
+            margin-top: 2rem;
+            padding: 1rem;
             background: #1e293b;
-            padding: 20px 30px;
-            border-radius: 12px;
+            border-left: 3px solid #2563eb;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            max-width: 600px;
         }
-        .preview-row img {
-            image-rendering: pixelated;
+        .info code {
+            color: #60a5fa;
+            background: #0f172a;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
     <h1>EasyMQL Icon Generator</h1>
-    <p class="subtitle">Trading chart icon on blue circular background - for Chrome Extension</p>
-
-    <button class="download-all" onclick="downloadAll()">Download All Icons (PNG)</button>
+    <p class="subtitle">Chrome Extension icon preview and download tool</p>
 
     <div class="icons-grid" id="iconsGrid"></div>
 
-    <div class="preview-section">
-        <h2>Preview at Native Size</h2>
-        <div class="preview-row" id="previewRow"></div>
+    <button class="btn btn-all" onclick="downloadAll()">Download All Icons</button>
+
+    <div class="info">
+        <p><strong>Usage:</strong> Click individual download buttons or "Download All" to get
+        the PNG files. Place them in <code>chrome-extension/icons/</code> as
+        <code>icon16.png</code>, <code>icon32.png</code>, <code>icon48.png</code>,
+        and <code>icon128.png</code>.</p>
     </div>
 
     <script>
-        const SIZES = [16, 32, 48, 128];
+    const SIZES = [16, 32, 48, 128];
+    const BG_COLOR = '#2563eb';
+    const LINE_COLOR = '#ffffff';
 
-        // Chart polyline points (normalized 0..1 coordinates)
-        const CHART_POINTS = [
-            [0.15, 0.55],
-            [0.25, 0.60],
-            [0.32, 0.50],
-            [0.40, 0.65],
-            [0.48, 0.45],
-            [0.55, 0.55],
-            [0.62, 0.40],
-            [0.72, 0.50],
-            [0.80, 0.30],
-            [0.87, 0.25],
-        ];
+    // Normalized chart points (x: 0-1, y: 0-1 where 0=top)
+    const CHART_POINTS = [
+        [0.00, 0.55],
+        [0.18, 0.70],
+        [0.35, 0.45],
+        [0.50, 0.60],
+        [0.65, 0.30],
+        [0.82, 0.15],
+        [1.00, 0.25],
+    ];
 
-        function drawIcon(canvas, size) {
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
+    function drawIcon(canvas, size) {
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
 
-            // Clear
-            ctx.clearRect(0, 0, size, size);
+        // Clear
+        ctx.clearRect(0, 0, size, size);
 
-            // Draw blue circle background
+        // Blue circle background
+        const cx = size / 2;
+        const cy = size / 2;
+        const radius = size / 2 - 0.5;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = BG_COLOR;
+        ctx.fill();
+
+        // Chart polyline
+        const margin = 0.18;
+        const chartLeft = margin * size;
+        const chartRight = (1 - margin) * size;
+        const chartTop = 0.25 * size;
+        const chartBottom = 0.72 * size;
+        const cw = chartRight - chartLeft;
+        const ch = chartBottom - chartTop;
+
+        const points = CHART_POINTS.map(([nx, ny]) => [
+            chartLeft + nx * cw,
+            chartTop + ny * ch,
+        ]);
+
+        const lineWidth = Math.max(1.2, (size / 16) * 1.5);
+
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i][0], points[i][1]);
+        }
+        ctx.strokeStyle = LINE_COLOR;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Arrowhead at the end
+        const last = points[points.length - 2];
+        const end = points[points.length - 1];
+        const dx = end[0] - last[0];
+        const dy = end[1] - last[1];
+        const segLen = Math.sqrt(dx * dx + dy * dy);
+        if (segLen > 0) {
+            const ndx = dx / segLen;
+            const ndy = dy / segLen;
+            const arrowLen = size * 0.08;
+            const pxN = -ndy;
+            const pyN = ndx;
+
+            const baseX = end[0] - ndx * arrowLen;
+            const baseY = end[1] - ndy * arrowLen;
+            const wing1 = [baseX + pxN * arrowLen * 0.6, baseY + pyN * arrowLen * 0.6];
+            const wing2 = [baseX - pxN * arrowLen * 0.6, baseY - pyN * arrowLen * 0.6];
+
             ctx.beginPath();
-            ctx.arc(size / 2, size / 2, size / 2 - 0.5, 0, Math.PI * 2);
-            ctx.fillStyle = '#2563eb';
-            ctx.fill();
-
-            // Subtle inner shadow / gradient for depth
-            if (size >= 48) {
-                const grad = ctx.createRadialGradient(
-                    size * 0.4, size * 0.35, 0,
-                    size / 2, size / 2, size / 2
-                );
-                grad.addColorStop(0, 'rgba(96, 165, 250, 0.25)');
-                grad.addColorStop(1, 'rgba(0, 0, 0, 0.15)');
-                ctx.beginPath();
-                ctx.arc(size / 2, size / 2, size / 2 - 0.5, 0, Math.PI * 2);
-                ctx.fillStyle = grad;
-                ctx.fill();
-            }
-
-            // Scale chart points
-            const scaledPoints = CHART_POINTS.map(([x, y]) => [x * size, y * size]);
-
-            // Determine line width
-            let lineWidth;
-            if (size <= 16) lineWidth = 1.5;
-            else if (size <= 32) lineWidth = 2.0;
-            else if (size <= 48) lineWidth = 2.8;
-            else lineWidth = 4.5;
-
-            // Draw chart polyline
-            ctx.beginPath();
-            ctx.moveTo(scaledPoints[0][0], scaledPoints[0][1]);
-            for (let i = 1; i < scaledPoints.length; i++) {
-                ctx.lineTo(scaledPoints[i][0], scaledPoints[i][1]);
-            }
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = lineWidth;
+            ctx.moveTo(end[0], end[1]);
+            ctx.lineTo(wing1[0], wing1[1]);
+            ctx.moveTo(end[0], end[1]);
+            ctx.lineTo(wing2[0], wing2[1]);
+            ctx.lineWidth = Math.max(1.0, lineWidth * 0.7);
             ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.strokeStyle = LINE_COLOR;
             ctx.stroke();
-
-            // Draw dot markers on larger sizes
-            if (size >= 48) {
-                const dotRadius = lineWidth * 0.45;
-                scaledPoints.forEach(([x, y]) => {
-                    ctx.beginPath();
-                    ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-                    ctx.fillStyle = 'white';
-                    ctx.fill();
-                });
-            }
         }
+    }
 
-        function downloadCanvas(canvas, filename) {
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
+    function downloadCanvas(canvas, filename) {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
 
-        function downloadAll() {
-            SIZES.forEach(size => {
-                const canvas = document.getElementById(`canvas-${size}`);
-                setTimeout(() => downloadCanvas(canvas, `icon${size}.png`), size * 2);
-            });
-        }
-
-        // Build the UI
-        const grid = document.getElementById('iconsGrid');
-        const previewRow = document.getElementById('previewRow');
-
+    function downloadAll() {
         SIZES.forEach(size => {
-            // Create display canvas (scaled up for visibility)
-            const displaySize = Math.max(size, 128);
-            const item = document.createElement('div');
-            item.className = 'icon-item';
-
-            const canvas = document.createElement('canvas');
-            canvas.id = `canvas-${size}`;
-            canvas.style.width = displaySize + 'px';
-            canvas.style.height = displaySize + 'px';
-            drawIcon(canvas, size);
-
-            const label = document.createElement('div');
-            label.className = 'icon-label';
-            label.innerHTML = `<strong>icon${size}.png</strong> (${size}x${size})`;
-
-            const btn = document.createElement('button');
-            btn.textContent = `Download ${size}x${size}`;
-            btn.onclick = () => downloadCanvas(canvas, `icon${size}.png`);
-
-            item.appendChild(canvas);
-            item.appendChild(label);
-            item.appendChild(btn);
-            grid.appendChild(item);
-
-            // Native-size preview
-            const previewCanvas = document.createElement('canvas');
-            drawIcon(previewCanvas, size);
-            previewCanvas.style.width = size + 'px';
-            previewCanvas.style.height = size + 'px';
-            previewRow.appendChild(previewCanvas);
+            const canvas = document.getElementById(`canvas-${size}`);
+            if (canvas) {
+                setTimeout(() => downloadCanvas(canvas, `icon${size}.png`), size * 2);
+            }
         });
+    }
+
+    // Build UI
+    const grid = document.getElementById('iconsGrid');
+    SIZES.forEach(size => {
+        const card = document.createElement('div');
+        card.className = 'icon-card';
+
+        const title = document.createElement('h3');
+        title.textContent = `${size} x ${size}`;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'canvas-wrapper' + (size >= 48 ? ' preview-large' : '');
+
+        const canvas = document.createElement('canvas');
+        canvas.id = `canvas-${size}`;
+        // Display size: show small icons scaled up for visibility
+        const displaySize = size < 48 ? size * 3 : size;
+        canvas.style.width = displaySize + 'px';
+        canvas.style.height = displaySize + 'px';
+
+        wrapper.appendChild(canvas);
+
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = `Download icon${size}.png`;
+        btn.onclick = () => downloadCanvas(canvas, `icon${size}.png`);
+
+        card.appendChild(title);
+        card.appendChild(wrapper);
+        card.appendChild(btn);
+        grid.appendChild(card);
+
+        drawIcon(canvas, size);
+    });
     </script>
 </body>
 </html>
